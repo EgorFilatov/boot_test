@@ -46,16 +46,18 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t txBuff[] { "Hello world" };
 struct Message {
 	uint8_t programmingMode[28] { "programming mode activated\n" };
 	uint8_t error[7] { "error\n" };
 } Message;
+
 std::vector<uint8_t>rxBuff;
 uint8_t *rxBuffPtr;
 uint32_t rxBuffLength { 0 };
 uint8_t rxFlag { 0 };
 uint8_t rxCounter { 0 };
+
+uint8_t programmingFlag { 0 };
 
 
 /* USER CODE END PV */
@@ -109,7 +111,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		if (rxFlag == 1) {
+		if (rxFlag) {
 			rxFlag = 0;
 
 			if (rxBuffLength >= rxCounter) {
