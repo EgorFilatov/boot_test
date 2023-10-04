@@ -31,6 +31,9 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 #define INIT_RX_BYTES_NUM 4
+
+#define STANDART_MODE 0
+#define PROGRAMMING_MODE 1
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -46,18 +49,20 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+Tim rxSilenceTim;
+std::vector<uint8_t>rxBuff;
+
 struct Message {
 	uint8_t programmingMode[28] { "programming mode activated\n" };
 	uint8_t error[7] { "error\n" };
 } Message;
 
-std::vector<uint8_t>rxBuff;
 uint8_t *rxBuffPtr;
 uint32_t rxBuffLength { 0 };
-uint8_t rxFlag { 0 };
+uint8_t rxState { 0 };
 uint8_t rxCounter { 0 };
 
-uint8_t programmingFlag { 0 };
+uint8_t bootState { STANDART_MODE };
 
 
 /* USER CODE END PV */
@@ -111,8 +116,69 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		if (rxFlag) {
-			rxFlag = 0;
+		if (rxState == 1 && rxSilenceTim.getMills() > 5) {
+			rxState = 2;
+		}
+
+		if (rxState == 2) {
+			switch (bootState) {
+			case STANDART_MODE:
+				if (rxBuff.size() == 3) {
+					if (rxBuff[0] == 0x70 && rxBuff[1] == 0x72 && rxBuff[2] == 0x63 && rxBuff[3] == 0x30) {
+						CDC_Transmit_FS(Message.programmingMode, 28);
+						rxBuff.clear();
+						bootState = PROGRAMMING_MODE;
+					}
+
+				} else {
+					CDC_Transmit_FS(Message.error, 7);
+				}
+
+				break;
+			case PROGRAMMING_MODE:
+				// Заливаем rxBuff во флеш
+				rxBuff.clear();
+				bootState = STANDART_MODE;
+				HAL_NVIC_SystemReset();
+				break;
+			}
+
+		}
+
+
+
+/*
+		if (rxState) {
+			rxState = 0;
+
+			switch (modeFlag) {
+				case STANDART_MODE:
+					if (rxBuffLength >= rxCounter) {
+						for (uint8_t i = 0; i < rxCounter; i++) {
+							rxBuff.push_back(rxBuffPtr[i]);
+						}
+						if (rxBuff[0] == 0x70 && rxBuff[1] == 0x72 && rxBuff[2] == 0x63  && rxBuff[3] == 0x30) {
+							CDC_Transmit_FS(Message.programmingMode, 28);
+							modeFlag = PROGRAMMING_MODE;
+						} else {
+							CDC_Transmit_FS(Message.error, 7);
+						}
+						rxBuff.clear();
+						rxCounter = INIT_RX_BYTES_NUM;
+					} else {
+						for (uint8_t i = 0; i < rxBuffLength; i++) {
+							rxBuff.push_back(rxBuffPtr[i]);
+						}
+						rxCounter = rxCounter - rxBuffLength;
+					}
+
+					break;
+				case PROGRAMMING_MODE:
+					break;
+			}
+
+
+
 
 			if (rxBuffLength >= rxCounter) {
 				for (uint8_t i = 0; i < rxCounter; i++) {
@@ -133,6 +199,7 @@ int main(void)
 			}
 
 		}
+		*/
 
 
 

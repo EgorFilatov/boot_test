@@ -20,7 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
-
+#include "Tim.h"
+#include <vector>
 /* USER CODE BEGIN INCLUDE */
 
 /* USER CODE END INCLUDE */
@@ -107,9 +108,9 @@ uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
   */
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
-extern uint8_t *rxBuffPtr;
-extern uint32_t rxBuffLength;
-extern uint8_t rxFlag;
+extern std::vector<uint8_t>rxBuff;
+extern Tim rxSilenceTim;
+extern uint8_t rxState;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 
@@ -264,14 +265,17 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
-  USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+	USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
+	USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
-  rxFlag = 1;
-  rxBuffPtr = Buf;
-  rxBuffLength = *Len;
+	rxBuff.resize(rxBuff.size() + *Len);
+	for (uint8_t i = 0; i < *Len; i++) {
+		rxBuff.push_back(Buf[i]);
+	}
+	rxSilenceTim.reset();
+	rxState = 1;
 
-  return (USBD_OK);
+	return (USBD_OK);
   /* USER CODE END 6 */
 }
 
