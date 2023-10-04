@@ -142,7 +142,6 @@ int main(void)
 				HAL_NVIC_SystemReset();
 				break;
 			}
-
 		}
 
 
