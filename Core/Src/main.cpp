@@ -30,8 +30,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#define INIT_RX_BYTES_NUM 4
-
 #define STANDART_MODE 0
 #define PROGRAMMING_MODE 1
 /* USER CODE END PTD */
@@ -53,17 +51,15 @@ Tim rxSilenceTim;
 std::vector<uint8_t>rxBuff;
 
 struct Message {
-	uint8_t programmingMode[28] { "programming mode activated\n" };
-	uint8_t error[7] { "error\n" };
+	uint8_t programmingMode[28] { "Programming mode activated\n" };
+	uint8_t programmingDone[18] { "Programming done\n" };
+	uint8_t error[7] { "Error\n" };
 } Message;
 
-uint8_t *rxBuffPtr;
-uint32_t rxBuffLength { 0 };
 uint8_t rxState { 0 };
-uint8_t rxCounter { 0 };
-
 uint8_t bootState { STANDART_MODE };
-
+uint32_t a { 0 };
+uint32_t b { 0 };
 
 /* USER CODE END PV */
 
@@ -109,101 +105,46 @@ int main(void)
   MX_GPIO_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-  rxCounter = INIT_RX_BYTES_NUM;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		if (rxState == 1 && rxSilenceTim.getMills() > 5) {
+
+		if (rxState == 1 && rxSilenceTim.getMills() > 50) {
 			rxState = 2;
+			a = rxSilenceTim.getMills();
+			b = HAL_GetTick();
 		}
 
 		if (rxState == 2) {
 			switch (bootState) {
 			case STANDART_MODE:
-				if (rxBuff.size() == 3) {
+				if (rxBuff.size() == 4) {
 					if (rxBuff[0] == 0x70 && rxBuff[1] == 0x72 && rxBuff[2] == 0x63 && rxBuff[3] == 0x30) {
 						CDC_Transmit_FS(Message.programmingMode, 28);
-						rxBuff.clear();
 						bootState = PROGRAMMING_MODE;
+					} else {
+						CDC_Transmit_FS(Message.error, 7);
 					}
 
 				} else {
 					CDC_Transmit_FS(Message.error, 7);
 				}
-
 				break;
+
 			case PROGRAMMING_MODE:
 				// Заливаем rxBuff во флеш
-				rxBuff.clear();
+				CDC_Transmit_FS(Message.programmingDone, 18);
 				bootState = STANDART_MODE;
-				HAL_NVIC_SystemReset();
+				//HAL_NVIC_SystemReset();
 				break;
 			}
-		}
-
-
-
-/*
-		if (rxState) {
+			rxBuff.clear();
 			rxState = 0;
-
-			switch (modeFlag) {
-				case STANDART_MODE:
-					if (rxBuffLength >= rxCounter) {
-						for (uint8_t i = 0; i < rxCounter; i++) {
-							rxBuff.push_back(rxBuffPtr[i]);
-						}
-						if (rxBuff[0] == 0x70 && rxBuff[1] == 0x72 && rxBuff[2] == 0x63  && rxBuff[3] == 0x30) {
-							CDC_Transmit_FS(Message.programmingMode, 28);
-							modeFlag = PROGRAMMING_MODE;
-						} else {
-							CDC_Transmit_FS(Message.error, 7);
-						}
-						rxBuff.clear();
-						rxCounter = INIT_RX_BYTES_NUM;
-					} else {
-						for (uint8_t i = 0; i < rxBuffLength; i++) {
-							rxBuff.push_back(rxBuffPtr[i]);
-						}
-						rxCounter = rxCounter - rxBuffLength;
-					}
-
-					break;
-				case PROGRAMMING_MODE:
-					break;
-			}
-
-
-
-
-			if (rxBuffLength >= rxCounter) {
-				for (uint8_t i = 0; i < rxCounter; i++) {
-					rxBuff.push_back(rxBuffPtr[i]);
-				}
-				if (rxBuff[0] == 0x70 && rxBuff[1] == 0x72 && rxBuff[2] == 0x63  && rxBuff[3] == 0x30) {
-					CDC_Transmit_FS(Message.programmingMode, 28);
-				} else {
-					CDC_Transmit_FS(Message.error, 7);
-				}
-				rxBuff.clear();
-				rxCounter = INIT_RX_BYTES_NUM;
-			} else {
-				for (uint8_t i = 0; i < rxBuffLength; i++) {
-					rxBuff.push_back(rxBuffPtr[i]);
-				}
-				rxCounter = rxCounter - rxBuffLength;
-			}
-
 		}
-		*/
-
-
-
-		//CDC_Transmit_FS(txBuff, 11);
-
 
     /* USER CODE END WHILE */
 

@@ -79,8 +79,8 @@ all: main-build
 main-build: boot_test.elf secondary-outputs
 
 # Tool invocations
-boot_test.elf boot_test.map: $(OBJS) $(USER_OBJS) C:\Users\Egor\Desktop\STM32\boot_test\STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "boot_test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Egor\Desktop\STM32\boot_test\STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="boot_test.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+boot_test.elf boot_test.map: $(OBJS) $(USER_OBJS) D:\Enercom\Enercom\ R3\code\boot_test\STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-g++ -o "boot_test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\Enercom\Enercom R3\code\boot_test\STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="boot_test.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

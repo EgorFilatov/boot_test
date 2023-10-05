@@ -268,11 +268,10 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 	USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
 	USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
-	rxBuff.resize(rxBuff.size() + *Len);
+	rxSilenceTim.reset();
 	for (uint8_t i = 0; i < *Len; i++) {
 		rxBuff.push_back(Buf[i]);
 	}
-	rxSilenceTim.reset();
 	rxState = 1;
 
 	return (USBD_OK);
