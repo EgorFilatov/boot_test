@@ -8,6 +8,6 @@ void Tim::reset(){
 }
 
 uint32_t Tim::getMills(){
-	return HAL_GetTick() - prevTick - 1;
+	return HAL_GetTick() - prevTick + 1;
 }
 

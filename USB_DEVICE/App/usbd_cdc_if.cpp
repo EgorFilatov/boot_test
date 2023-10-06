@@ -22,6 +22,7 @@
 #include "usbd_cdc_if.h"
 #include "Tim.h"
 #include <vector>
+#include "stm32f4xx_hal.h"
 /* USER CODE BEGIN INCLUDE */
 
 /* USER CODE END INCLUDE */

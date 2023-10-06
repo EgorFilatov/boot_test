@@ -58,8 +58,6 @@ struct Message {
 
 uint8_t rxState { 0 };
 uint8_t bootState { STANDART_MODE };
-uint32_t a { 0 };
-uint32_t b { 0 };
 
 /* USER CODE END PV */
 
@@ -112,11 +110,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-		if (rxState == 1 && rxSilenceTim.getMills() > 50) {
+		if (rxState == 1 && rxSilenceTim.getMills() > 20) {
 			rxState = 2;
-			a = rxSilenceTim.getMills();
-			b = HAL_GetTick();
 		}
 
 		if (rxState == 2) {
@@ -137,6 +132,7 @@ int main(void)
 
 			case PROGRAMMING_MODE:
 				// Заливаем rxBuff во флеш
+				uint32_t a = rxBuff.size();
 				CDC_Transmit_FS(Message.programmingDone, 18);
 				bootState = STANDART_MODE;
 				//HAL_NVIC_SystemReset();
